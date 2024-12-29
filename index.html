@@ -1,0 +1,1621 @@
+<html><head><base href=".">
+<title>MarekOS Desktop</title>
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    user-select: none;
+}
+
+body {
+    font-family: 'Segoe UI', sans-serif;
+    height: 100vh;
+    background: linear-gradient(45deg, #2c3e50, #3498db);
+    overflow: hidden;
+}
+
+/* Login Screen Styles */
+.login-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: linear-gradient(45deg, #2c3e50, #3498db);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    transition: opacity 0.5s ease-in-out;
+}
+
+.login-box {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 30px;
+    border-radius: 10px;
+    text-align: center;
+    opacity: 0;
+    animation: fadeIn 0.5s ease-out forwards;
+}
+
+.login-box h2 {
+    opacity: 0;
+    transform: translateX(-100%);
+    animation: bootAnimation 1s ease-out forwards;
+}
+
+/* Command Console Styles */
+.command-console {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 600px;
+    height: 400px;
+    background: rgba(0, 0, 0, 0.9);
+    color: #00ff00;
+    padding: 20px;
+    font-family: monospace;
+    border-radius: 10px;
+    display: none;
+    z-index: 1000;
+}
+
+.console-output {
+    height: 320px;
+    overflow-y: auto;
+    margin-bottom: 10px;
+    white-space: pre-wrap;
+}
+
+.console-input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    color: #00ff00;
+    font-family: monospace;
+    outline: none;
+}
+
+/* Chat Window Styles */
+.chat-window {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 400px;
+    height: 500px;
+    background: white;
+    border-radius: 10px;
+    display: none;
+    flex-direction: column;
+    z-index: 1001;
+}
+
+.chat-messages {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+.chat-input {
+    padding: 20px;
+    border-top: 1px solid #eee;
+}
+
+.chat-input input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.desktop {
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+}
+
+.taskbar {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+}
+
+.start-button {
+    background: #3498db;
+    padding: 5px 15px;
+    border-radius: 5px;
+    color: white;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.start-button:hover {
+    background: #2980b9;
+}
+
+.taskbar-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-left: auto;
+}
+
+.internet-status {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 10px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.internet-status:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.internet-icon {
+    width: 16px;
+    height: 16px;
+}
+
+.internet-status.connected .internet-icon path {
+    fill: #2ecc71;
+}
+
+.internet-status.disconnected .internet-icon path {
+    fill: #e74c3c;
+}
+
+.desktop-icon {
+    width: 80px;
+    height: 90px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 20px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.desktop-icon:hover {
+    transform: scale(1.1);
+}
+
+.icon-image {
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 5px;
+}
+
+.icon-text {
+    color: white;
+    text-align: center;
+    font-size: 12px; 
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+
+.time {
+    margin-left: auto;
+    color: #333;
+}
+
+.os-logo {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 72px;
+    color: rgba(255, 255, 255, 0.1);
+    font-weight: bold;
+    pointer-events: none;
+}
+
+.app-window {
+    position: absolute;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.2);
+    min-width: 400px;
+    min-height: 300px;
+    display: none;
+    overflow: hidden;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.app-window.closing {
+    animation: fadeOut 0.3s ease-in forwards;
+}
+
+.window-header {
+    background: #3498db;
+    color: white;
+    padding: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: move;
+}
+
+.window-controls {
+  display: flex;
+  gap: 5px;
+}
+
+.maximize-button {
+  background: #2ecc71;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.app-window.fullscreen {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  transform: none !important;
+  border-radius: 0;
+  z-index: 9999;
+}
+
+.app-window.fullscreen .window-content {
+  height: calc(100vh - 40px);
+}
+
+.window-content {
+    padding: 20px;
+    height: calc(100% - 40px);
+}
+
+.document-item {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+}
+
+.document-item:hover {
+    background: #f5f5f5;
+}
+
+.document-item svg {
+    margin-right: 10px;
+}
+
+.app-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+.app-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    padding: 10px;
+    border-radius: 8px;
+    transition: 0.3s;
+}
+
+.app-item:hover {
+    background: #f5f5f5;
+}
+
+.app-item span {
+    margin-top: 5px;
+    font-size: 14px;
+}
+
+.settings-grid {
+    display: grid;
+    gap: 20px;
+    padding: 20px;
+}
+
+.setting-item {
+    background: #f5f5f5;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.setting-item h3 {
+    margin-bottom: 10px;
+}
+
+.setting-item select, .setting-item input {
+    margin-top: 5px;
+}
+
+.calculator {
+    padding: 20px;
+    background: #f0f0f0;
+    border-radius: 8px;
+}
+
+#calc-display {
+    width: 100%;
+    height: 50px;
+    margin-bottom: 10px;
+    font-size: 24px;
+    text-align: right;
+    padding: 5px;
+}
+
+.calc-buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 5px;
+}
+
+.calc-buttons button {
+    padding: 15px;
+    font-size: 18px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background: white;
+    cursor: pointer;
+}
+
+.calc-buttons button:hover {
+    background: #e0e0e0;
+}
+
+.notes-app {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+#notes-content {
+    flex: 1;
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    resize: none;
+}
+
+.notes-controls {
+    display: flex;
+    gap: 10px;
+}
+
+.notes-controls button {
+    padding: 8px 20px;
+    background: #3498db;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.document-viewer {
+    height: 100%;
+}
+
+.document-viewer textarea {
+    width: 100%;
+    height: 100%;
+    padding: 10px;
+    resize: none;
+    border: 1px solid #ccc;
+}
+
+.hint {
+    color: rgba(255, 255, 255, 0.9); 
+    margin-top: 15px;
+    font-size: 14px; 
+    padding: 5px;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+}
+
+.browser-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: #f5f5f5;
+}
+
+.browser-toolbar {
+    display: flex;
+    gap: 10px;
+    padding: 15px;
+    background: #fff;
+    border-bottom: 1px solid #ddd;
+    align-items: center;
+}
+
+.nav-buttons {
+    display: flex;
+    gap: 5px;
+}
+
+.browser-btn {
+    padding: 8px 12px;
+    border: none;
+    background: #f0f0f0;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+}
+
+.browser-btn:hover {
+    background: #e0e0e0;
+    transform: scale(1.05);
+}
+
+.url-bar {
+    flex: 1;
+    display: flex;
+    gap: 8px;
+    background: #f5f5f5;
+    padding: 5px;
+    border-radius: 8px;
+}
+
+.url-bar input {
+    flex: 1;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 6px;
+    outline: none;
+    font-size: 14px;
+    background: transparent;
+}
+
+.url-bar button {
+    padding: 8px 20px;
+    border: none;
+    background: #3498db;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.url-bar button:hover {
+    background: #2980b9;
+    transform: scale(1.05);
+}
+
+.browser-content {
+    flex: 1;
+    position: relative;
+}
+
+.browser-home {
+    padding: 40px;
+    text-align: center;
+    height: 100%;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+.browser-home h1 {
+    font-size: 32px;
+    color: #2c3e50;
+    margin-bottom: 30px;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+}
+
+.search-container {
+    max-width: 600px;
+    margin: 0 auto 40px;
+}
+
+.search-container input {
+    width: 100%;
+    padding: 15px 20px;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    margin-bottom: 15px;
+}
+
+.search-container button {
+    padding: 12px 30px;
+    background: #3498db;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.search-container button:hover {
+    background: #2980b9;
+    transform: scale(1.05);
+}
+
+.quick-links {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.quick-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    background: white;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.quick-link:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.quick-link-icon {
+    font-size: 24px;
+    margin-bottom: 10px;
+    color: #3498db;
+}
+
+#browserFrame {
+    width: 100%;
+    height: 100%;
+    border: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.connection-popup {
+    position: absolute;
+    bottom: 45px;
+    right: 10px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    padding: 15px;
+    min-width: 250px;
+    display: none;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.connection-popup.show {
+    display: block;
+}
+
+.connection-status {
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.connection-controls button {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 5px;
+    background: #3498db;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.connection-controls button:hover {
+    background: #2980b9;
+}
+
+@keyframes bootAnimation {
+    0% {
+        clip-path: inset(0 100% 0 0);
+        transform: scale(0.5);
+        opacity: 0;
+    }
+    50% {
+        clip-path: inset(0 0 0 0);
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+}
+.login-animation {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #2c3e50;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.marekos-text {
+  font-size: 72px;
+  color: white;
+  font-weight: bold;
+  display: flex;
+  overflow: hidden;
+}
+
+.marekos-text span {
+  transform: translateY(100%);
+  opacity: 0;
+}
+
+.login-animation.active {
+  opacity: 1;
+  animation: fadeOutAnimation 0.5s ease-out 7.5s forwards;
+}
+
+.login-animation.active .marekos-text span {
+  animation: slideIn 0.3s ease-out forwards;
+}
+
+@keyframes fadeOutAnimation {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+.browser-warning {
+    color: #ff0000;
+    font-size: 10px;
+    text-align: center;
+    margin-top: 2px;
+    max-width: 100px;
+    line-height: 1.2;
+    text-shadow: none;
+}
+.desktop-note {
+  position: absolute;
+  width: 80px;
+  height: 90px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 20px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.desktop-note:hover {
+  transform: scale(1.1);
+}
+
+.note-icon {
+  width: 50px;
+  height: 50px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 5px;
+}
+
+.note-title {
+  color: white;
+  text-align: center;
+  font-size: 12px;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+.note-title[contenteditable="true"] {
+  background: rgba(255, 255, 255, 0.9);
+  color: black;
+  outline: none;
+}
+</style>
+</head>
+<body>
+
+<div class="login-screen" id="loginScreen">
+    <div class="login-box">
+        <h2>Welcome to MarekOS</h2>
+        <input type="password" id="passwordInput" placeholder="Enter password">
+        <button onclick="login()">Login</button>
+        <div class="hint">Hint: Type &quot;MarekOS&quot; to access desktop</div>
+    </div>
+</div>
+
+<div class="login-animation">
+  <div class="marekos-text">
+    <span style="animation-delay: 0s">M</span>
+    <span style="animation-delay: 0.2s">a</span>
+    <span style="animation-delay: 0.4s">r</span>
+    <span style="animation-delay: 0.6s">e</span>
+    <span style="animation-delay: 0.8s">k</span>
+    <span style="animation-delay: 1.0s">O</span>
+    <span style="animation-delay: 1.2s">S</span>
+  </div>
+</div>
+
+<div class="command-console" id="commandConsole">
+    <div class="console-output" id="consoleOutput"></div>
+    <input type="text" class="console-input" id="consoleInput" placeholder="Enter command...">
+</div>
+
+<div class="chat-window" id="chatWindow">
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="chat-input">
+        <input type="text" id="chatInput" placeholder="Type a message...">
+    </div>
+</div>
+
+<div class="desktop">
+    <div class="os-logo">MarekOS</div>
+    
+    <div class="desktop-icon" data-app="documents">
+        <div class="icon-image">
+            <svg width="30" height="30" viewBox="0 0 24 24">
+                <path fill="#333" d="M20,18H4V8H20M20,6H12L10,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V8C22,6.89 21.1,6 20,6Z"/>
+            </svg>
+        </div>
+        <div class="icon-text">Documents</div>
+    </div>
+
+    <div class="desktop-icon" data-app="apps">
+        <div class="icon-image">
+            <svg width="30" height="30" viewBox="0 0 24 24">
+                <path fill="#333" d="M12,3L1,9L12,15L21,10.09V17H23V9M5,13.18V17.18L12,21L19,17.18V13.18L12,17L5,13.18Z"/>
+            </svg>
+        </div>
+        <div class="icon-text">MarekOS Apps</div>
+    </div>
+
+    <div class="desktop-icon" data-app="settings">
+        <div class="icon-image">
+            <svg width="30" height="30" viewBox="0 0 24 24">
+                <path fill="#333" d="M12,8A4,4 0 0,1 16,12A4,4 0 0,1 12,16A4,4 0 0,1 8,12A4,4 0 0,1 12,8M12,10A2,2 0 0,0 10,12A2,2 0 0,0 12,14A2,2 0 0,0 14,12A2,2 0 0,0 12,10M10,22C9.75,22 9.54,21.82 9.5,21.58L9.13,18.93C8.5,18.68 7.96,18.34 7.44,17.94L4.95,18.95C4.73,19.03 4.46,18.95 4.34,18.73L2.34,15.27C2.21,15.05 2.27,14.78 2.46,14.63L4.57,12.97L4.5,12L4.57,11L2.46,9.37C2.27,9.22 2.21,8.95 2.34,8.73L4.34,5.27C4.46,5.05 4.73,4.96 4.95,5.05L7.44,6.05C7.96,5.66 8.5,5.32 9.13,5.07L9.5,2.42C9.54,2.18 9.75,2 10,2H14C14.25,2 14.46,2.18 14.5,2.42L14.87,5.07C15.5,5.32 16.04,5.66 16.56,6.05L19.05,5.05C19.27,4.96 19.54,5.05 19.66,5.27L21.66,8.73C21.79,8.95 21.73,9.22 21.54,9.37L19.43,11L19.5,12L19.43,13L21.54,14.63C21.73,14.78 21.79,15.05 21.66,15.27L19.66,18.73C19.54,18.95 19.27,19.03 19.05,18.95L16.56,17.95C16.04,18.34 15.5,18.68 14.87,18.93L14.5,21.58C14.46,21.82 14.25,22 14,22H10M11.25,4L10.88,6.61C9.68,6.86 8.62,7.5 7.85,8.39L5.44,7.35L4.69,8.65L6.8,10.2C6.4,11.37 6.4,12.64 6.8,13.8L4.68,15.36L5.43,16.66L7.86,15.62C8.63,16.5 9.68,17.14 10.87,17.38L11.24,20H12.76L13.13,17.39C14.32,17.14 15.37,16.5 16.14,15.62L18.57,16.66L19.32,15.36L17.2,13.81C17.6,12.64 17.6,11.37 17.2,10.2L19.31,8.65L18.56,7.35L16.15,8.39C15.38,7.5 14.32,6.86 13.12,6.62L12.75,4H11.25Z"/>
+            </svg>
+        </div>
+        <div class="icon-text">Settings</div>
+    </div>
+
+    <div class="desktop-icon" data-app="browser">
+        <div class="icon-image">
+            <svg width="30" height="30" viewBox="0 0 24 24">
+                <path fill="#333" d="M12,21L15.6,16.2C14.6,15.45 13.35,15 12,15C10.65,15 9.4,15.45 8.4,16.2L12,21M12,3C7.95,3 4.21,4.34 1.2,6.6L3,9C5.5,7.12 8.62,6 12,6C15.38,6 18.5,7.12 21,9L22.8,6.6C19.79,4.34 16.05,3 12,3M12,9C9.3,9 6.81,9.89 4.8,11.4L6.6,13.8C8.1,12.67 9.97,12 12,12C14.03,12 15.9,12.67 17.4,13.8L19.2,11.4C17.19,9.89 14.7,9 12,9Z"/>
+            </svg>
+        </div>
+        <div class="icon-text">Mareks Browser</div>
+        <div class="browser-warning">[Sadly Doesnt work :( message me on discord mareksplayz if you have a solution]</div>
+    </div>
+
+    <!-- App Windows -->
+    <div class="app-window" id="documents-window">
+        <div class="window-header">
+            <div class="window-title">Documents</div>
+            <div class="window-controls">
+                <button class="maximize-button">&#x25a1;</button>
+                <button class="close-button">&#xd7;</button>
+            </div>
+        </div>
+        <div class="window-content">
+            <h3>My Documents</h3>
+            <div id="document-list">
+                <div class="document-item">
+                    <svg width="20" height="20" viewBox="0 0 24 24">
+                        <path fill="#333" d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                    </svg>
+                    <span>Document1.txt</span>
+                </div>
+                <div class="document-item">
+                    <svg width="20" height="20" viewBox="0 0 24 24">
+                        <path fill="#333" d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                    </svg>
+                    <span>Document2.txt</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-window" id="apps-window">
+        <div class="window-header">
+            <div class="window-title">MarekOS Apps</div>
+            <div class="window-controls">
+                <button class="maximize-button">&#x25a1;</button>
+                <button class="close-button">&#xd7;</button>
+            </div>
+        </div>
+        <div class="window-content">
+            <div class="app-grid">
+                <div class="app-item">
+                    <svg width="40" height="40" viewBox="0 0 24 24">
+                        <path fill="#333" d="M21,16.5C21,16.88 20.79,17.21 20.47,17.38L12.57,21.82C12.41,21.94 12.21,22 12,22C11.79,22 11.59,21.94 11.43,21.82L3.53,17.38C3.21,17.21 3,16.88 3,16.5V7.5C3,7.12 3.21,6.79 3.53,6.62L11.43,2.18C11.59,2.06 11.79,2 12,2C12.21,2 12.41,2.06 12.57,2.18L20.47,6.62C20.79,6.79 21,7.12 21,7.5V16.5M12,4.15L6.04,7.5L12,10.85L17.96,7.5L12,4.15Z"/>
+                    </svg>
+                    <span>Calculator</span>
+                </div>
+                <div class="app-item">
+                    <svg width="40" height="40" viewBox="0 0 24 24">
+                        <path fill="#333" d="M19,3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3M5,13.18V17.18L12,21L19,17.18V13.18L12,17L5,13.18Z"/>
+                    </svg>
+                    <span>Notes</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-window" id="settings-window">
+        <div class="window-header">
+            <div class="window-title">Settings</div>
+            <div class="window-controls">
+                <button class="maximize-button">&#x25a1;</button>
+                <button class="close-button">&#xd7;</button>
+            </div>
+        </div>
+        <div class="window-content">
+            <div class="settings-grid">
+                <div class="setting-item">
+                    <h3>Theme</h3>
+                    <select id="theme-selector">
+                        <option value="default">Default Blue</option>
+                        <option value="dark">Dark Theme</option>
+                        <option value="light">Light Theme</option>
+                    </select>
+                </div>
+                <div class="setting-item">
+                    <h3>Sound Effects</h3>
+                    <label>
+                        <input type="checkbox" id="sound-toggle" checked>
+                        Enable sound effects
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-window" id="calculator-window">
+        <div class="window-header">
+            <div class="window-title">Calculator</div>
+            <div class="window-controls">
+                <button class="maximize-button">&#x25a1;</button>
+                <button class="close-button">&#xd7;</button>
+            </div>
+        </div>
+        <div class="window-content">
+            <div class="calculator">
+                <input type="text" id="calc-display" readonly>
+                <div class="calc-buttons">
+                    <button onclick="appendToDisplay(&apos;7&apos;)">7</button>
+                    <button onclick="appendToDisplay(&apos;8&apos;)">8</button>
+                    <button onclick="appendToDisplay(&apos;9&apos;)">9</button>
+                    <button onclick="appendToDisplay(&apos;+&apos;)">+</button>
+                    <button onclick="appendToDisplay(&apos;4&apos;)">4</button>
+                    <button onclick="appendToDisplay(&apos;5&apos;)">5</button>
+                    <button onclick="appendToDisplay(&apos;6&apos;)">6</button>
+                    <button onclick="appendToDisplay(&apos;-&apos;)">-</button>
+                    <button onclick="appendToDisplay(&apos;1&apos;)">1</button>
+                    <button onclick="appendToDisplay(&apos;2&apos;)">2</button>
+                    <button onclick="appendToDisplay(&apos;3&apos;)">3</button>
+                    <button onclick="appendToDisplay(&apos;*&apos;)">&#xd7;</button>
+                    <button onclick="appendToDisplay(&apos;0&apos;)">0</button>
+                    <button onclick="appendToDisplay(&apos;.&apos;)">.</button>
+                    <button onclick="calculate()">=</button>
+                    <button onclick="appendToDisplay(&apos;/&apos;)">/</button>
+                    <button onclick="clearDisplay()">C</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-window" id="notes-window">
+        <div class="window-header">
+            <div class="window-title">Notes</div>
+            <div class="window-controls">
+                <button class="maximize-button">&#x25a1;</button>
+                <button class="close-button">&#xd7;</button>
+            </div>
+        </div>
+        <div class="window-content">
+            <div class="notes-app">
+                <textarea id="notes-content" placeholder="Start typing your notes..."></textarea>
+                <div class="notes-controls">
+                    <button onclick="saveNotes()">Save</button>
+                    <button onclick="loadNotes()">Load</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-window" id="document1-window">
+        <div class="window-header">
+            <div class="window-title">Document1.txt</div>
+            <div class="window-controls">
+                <button class="maximize-button">&#x25a1;</button>
+                <button class="close-button">&#xd7;</button>
+            </div>
+        </div>
+        <div class="window-content">
+            <div class="document-viewer">
+                <textarea id="document1-content">Welcome to Document1.txt!
+This is a sample text document.
+You can edit this content.</textarea>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-window" id="document2-window">
+        <div class="window-header">
+            <div class="window-title">Document2.txt</div>
+            <div class="window-controls">
+                <button class="maximize-button">&#x25a1;</button>
+                <button class="close-button">&#xd7;</button>
+            </div>
+        </div>
+        <div class="window-content">
+            <div class="document-viewer">
+                <textarea id="document2-content">Welcome to Document2.txt!
+This is another sample text document.
+Feel free to modify this content.</textarea>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-window" id="browser-window">
+        <div class="window-header">
+            <div class="window-title">Mareks Browser</div>
+            <div class="window-controls">
+                <button class="maximize-button">&#x25a1;</button>
+                <button class="close-button">&#xd7;</button>
+            </div>
+        </div>
+        <div class="window-content">
+            <div class="browser-container">
+                <div class="browser-toolbar">
+                    <div class="nav-buttons">
+                        <button class="browser-btn" title="Back">&#x25c0;</button>
+                        <button class="browser-btn" title="Forward">&#x25b6;</button>
+                        <button class="browser-btn" title="Refresh">&#x21bb;</button>
+                        <button class="browser-btn" title="Home" onclick="showHome()">&#x2302;</button>
+                    </div>
+                    <div class="url-bar">
+                        <input type="text" id="urlInput" placeholder="Search MarekOS web or enter URL...">
+                        <button onclick="navigateToUrl()">Go</button>
+                    </div>
+                </div>
+                <div class="browser-content">
+                    <div id="browserHome" class="browser-home">
+                        <h1>Welcome to MarekOS Browser</h1>
+                        <div class="search-container">
+                            <input type="text" id="homeSearchInput" placeholder="Search the web...">
+                            <button onclick="performSearch()">Search</button>
+                        </div>
+                        <div class="quick-links">
+                            <div class="quick-link" onclick="navigateTo(&apos;https://youtube-nocookie.com/embed&apos;)">
+                                <div class="quick-link-icon">&#x25b6;</div>
+                                <span>YouTube</span>
+                            </div>
+                            <div class="quick-link" onclick="navigateTo(&apos;https://wikipedia.org&apos;)">
+                                <div class="quick-link-icon">&#x2139;</div>
+                                <span>Wikipedia</span>
+                            </div>
+                            <div class="quick-link" onclick="navigateTo(&apos;https://duckduckgo.com&apos;)">
+                                <div class="quick-link-icon">&#x1f50d;</div>
+                                <span>DuckDuckGo</span>
+                            </div>
+                        </div>
+                    </div>
+                    <iframe id="browserFrame" style="display: none" sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-popups-to-escape-sandbox allow-presentation allow-top-navigation-by-user-activation"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="taskbar">
+        <div class="start-button">MarekOS</div>
+        <div class="taskbar-controls">
+            <div class="internet-status connected">
+                <svg class="internet-icon" viewBox="0 0 24 24">
+                    <path fill="#2ecc71" d="M12,21L15.6,16.2C14.6,15.45 13.35,15 12,15C10.65,15 9.4,15.45 8.4,16.2L12,21M12,3C7.95,3 4.21,4.34 1.2,6.6L3,9C5.5,7.12 8.62,6 12,6C15.38,6 18.5,7.12 21,9L22.8,6.6C19.79,4.34 16.05,3 12,3M12,9C9.3,9 6.81,9.89 4.8,11.4L6.6,13.8C8.1,12.67 9.97,12 12,12C14.03,12 15.9,12.67 17.4,13.8L19.2,11.4C17.19,9.89 14.7,9 12,9Z"/>
+                </svg>
+                <span class="status-text">Connected</span>
+            </div>
+            <div class="time" id="clock"></div>
+        </div>
+    </div>
+</div>
+
+<div class="connection-popup" id="connectionPopup">
+    <div class="connection-status">Internet Status: <span id="connectionStatus">Disconnected</span></div>
+    <div class="connection-controls">
+        <button onclick="toggleConnection()">Connect</button>
+    </div>
+</div>
+
+<audio id="clickSound" src="mixkit-fast-double-click-on-mouse-275.wav"></audio>
+<audio id="keyboardSound" src="mixkit-slow-typing-on-a-keyboard-2532.wav"></audio>
+
+<script>function appendToDisplay(value) {
+  document.getElementById('calc-display').value += value;
+}
+function calculate() {
+  try {
+    document.getElementById('calc-display').value = eval(document.getElementById('calc-display').value);
+  } catch (e) {
+    document.getElementById('calc-display').value = 'Error';
+  }
+}
+function clearDisplay() {
+  document.getElementById('calc-display').value = '';
+}
+function saveNotes() {
+  const notesContent = document.getElementById('notes-content').value;
+  if (notesContent.trim() === '') return;
+  const timestamp = Date.now();
+  const noteData = {
+    content: notesContent,
+    title: `Note_${timestamp}`
+  };
+  createNoteIcon(noteData, timestamp);
+  document.getElementById('notes-content').value = '';
+  const notesWindow = document.getElementById('notes-window');
+  notesWindow.style.display = 'none';
+}
+function loadNotes() {
+  document.getElementById('notes-content').value = localStorage.getItem('notes') || '';
+}
+function login() {
+  const password = document.getElementById('passwordInput').value;
+  const loginScreen = document.getElementById('loginScreen');
+  const clickSound = document.getElementById('clickSound');
+  const loginAnimation = document.querySelector('.login-animation');
+  if (password === 'MarekOS') {
+    clickSound.play();
+    loginScreen.style.opacity = '0';
+    loginAnimation.classList.add('active');
+    setTimeout(() => {
+      loginScreen.style.display = 'none';
+      setTimeout(() => {
+        loginAnimation.style.display = 'none';
+      }, 8000);
+    }, 500);
+  } else {
+    alert('Incorrect password!');
+  }
+}
+function initializeCommandConsole() {
+  const room = new WebsimSocket();
+  const consoleInput = document.getElementById('consoleInput');
+  const consoleOutput = document.getElementById('consoleOutput');
+  const chatWindow = document.getElementById('chatWindow');
+  const chatInput = document.getElementById('chatInput');
+  const chatMessages = document.getElementById('chatMessages');
+  consoleInput.addEventListener('keypress', function (e) {
+    if (e.key === 'Enter') {
+      const command = consoleInput.value.trim().toLowerCase();
+      consoleOutput.innerHTML += `> ${command}\n`;
+      switch (command) {
+        case 'chat':
+          room.send({
+            type: 'start_chat'
+          });
+          chatWindow.style.display = 'flex';
+          consoleOutput.innerHTML += 'Chat activated. Type /stop in chat to exit.\n';
+          break;
+        case 'destroy all':
+          room.send({
+            type: 'destroy'
+          });
+          consoleOutput.innerHTML += 'Sent destroy command to all clients\n';
+          break;
+        case 'help':
+          consoleOutput.innerHTML += `
+Available commands:
+- chat: Start global chat for all users
+- destroy all: Trigger blue screen for all users
+- help: Show this help message
+`;
+          break;
+      }
+      consoleInput.value = '';
+    }
+  });
+  chatInput.addEventListener('keypress', function (e) {
+    if (e.key === 'Enter') {
+      const message = chatInput.value.trim();
+      if (message === '/stop') {
+        room.send({
+          type: 'stop_chat'
+        });
+        chatWindow.style.display = 'none';
+        consoleOutput.innerHTML += 'Chat deactivated.\n';
+      } else {
+        room.send({
+          type: 'chat',
+          message: message
+        });
+      }
+      chatInput.value = '';
+    }
+  });
+  room.onmessage = event => {
+    const data = event.data;
+    switch (data.type) {
+      case 'chat':
+        const messageElement = document.createElement('div');
+        messageElement.textContent = `${data.username}: ${data.message}`;
+        chatMessages.appendChild(messageElement);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        break;
+      case 'start_chat':
+        chatWindow.style.display = 'flex';
+        break;
+      case 'stop_chat':
+        chatWindow.style.display = 'none';
+        break;
+      case 'destroy':
+        document.body.innerHTML = `
+          <div style="background:blue;color:white;height:100vh;padding:20px">
+            <h1>SYSTEM FAILURE</h1>
+            <p>Your system has been destroyed by an administrator.</p>
+            <p>Please refresh the page to restart.</p>
+          </div>
+        `;
+        break;
+    }
+  };
+}
+function updateClock() {
+  const clock = document.getElementById('clock');
+  const now = new Date();
+  clock.textContent = now.toLocaleTimeString();
+}
+setInterval(updateClock, 1000);
+updateClock();
+document.querySelectorAll('.app-window').forEach(makeWindowDraggable);
+function makeWindowDraggable(window) {
+  const header = window.querySelector('.window-header');
+  let isDragging = false;
+  let currentX;
+  let currentY;
+  let initialX;
+  let initialY;
+  let xOffset = 0;
+  let yOffset = 0;
+  header.addEventListener('mousedown', dragStart);
+  document.addEventListener('mousemove', drag);
+  document.addEventListener('mouseup', dragEnd);
+  function dragStart(e) {
+    if (window.classList.contains('fullscreen')) {
+      return;
+    }
+    initialX = e.clientX - xOffset;
+    initialY = e.clientY - yOffset;
+    if (e.target === header) {
+      isDragging = true;
+    }
+  }
+  function drag(e) {
+    if (isDragging && !window.classList.contains('fullscreen')) {
+      e.preventDefault();
+      currentX = e.clientX - initialX;
+      currentY = e.clientY - initialY;
+      xOffset = currentX;
+      yOffset = currentY;
+      window.style.transform = `translate(${currentX}px, ${currentY}px)`;
+    }
+  }
+  function dragEnd() {
+    isDragging = false;
+  }
+}
+document.querySelectorAll('.desktop-icon').forEach(icon => {
+  icon.addEventListener('click', () => {
+    const appName = icon.getAttribute('data-app');
+    const window = document.getElementById(`${appName}-window`);
+    if (window) {
+      document.getElementById('clickSound').play();
+      window.style.display = 'block';
+      window.style.animation = 'none';
+      window.offsetHeight;
+      window.style.animation = null;
+    }
+  });
+});
+document.querySelectorAll('.close-button').forEach(button => {
+  button.addEventListener('click', () => {
+    const appWindow = button.closest('.app-window');
+    document.getElementById('clickSound').play();
+    appWindow.classList.remove('fullscreen');
+    appWindow.classList.add('closing');
+    setTimeout(() => {
+      appWindow.style.display = 'none';
+      appWindow.classList.remove('closing');
+    }, 300);
+  });
+});
+document.querySelectorAll('.app-item').forEach(item => {
+  item.addEventListener('click', () => {
+    const appName = item.querySelector('span').textContent.toLowerCase();
+    const windowId = appName + '-window';
+    const window = document.getElementById(windowId);
+    if (window) {
+      document.getElementById('clickSound').play();
+      window.style.display = 'block';
+      window.style.animation = 'none';
+      window.offsetHeight;
+      window.style.animation = null;
+    }
+  });
+});
+document.querySelectorAll('.document-item').forEach(item => {
+  item.addEventListener('click', () => {
+    const documentName = item.querySelector('span').textContent;
+    const windowId = documentName.split('.')[0].toLowerCase() + '-window';
+    const window = document.getElementById(windowId);
+    if (window) {
+      document.getElementById('clickSound').play();
+      window.style.display = 'block';
+      window.style.animation = 'none';
+      window.offsetHeight;
+      window.style.animation = null;
+    }
+  });
+});
+document.addEventListener('keydown', function (e) {
+  if (e.ctrlKey && e.key.toLowerCase() === 'm') {
+    const room = new WebsimSocket();
+    if (room.party.client.username === 'mareksplayz') {
+      if (document.getElementById('loginScreen').style.display !== 'none') {
+        document.getElementById('loginScreen').style.display = 'none';
+      }
+      document.getElementById('commandConsole').style.display = 'block';
+      initializeCommandConsole();
+    }
+  }
+});
+let keyboardSoundTimeout;
+function handleKeyboardSound() {
+  const keyboardSound = document.getElementById('keyboardSound');
+  keyboardSound.currentTime = 0;
+  keyboardSound.play();
+  clearTimeout(keyboardSoundTimeout);
+  keyboardSoundTimeout = setTimeout(() => {
+    keyboardSound.pause();
+  }, 2000);
+}
+document.querySelectorAll('input[type="text"], input[type="password"], textarea').forEach(element => {
+  element.addEventListener('input', handleKeyboardSound);
+});
+function navigateToUrl() {
+  const urlInput = document.getElementById('urlInput');
+  const browserFrame = document.getElementById('browserFrame');
+  const browserHome = document.getElementById('browserHome');
+  let url = urlInput.value.trim();
+  if (url === '') {
+    showHome();
+    return;
+  }
+  if (!url.match(/^https?:\/\//i)) {
+    url = 'https://' + url;
+  }
+  try {
+    new URL(url);
+    browserFrame.style.display = 'block';
+    browserHome.style.display = 'none';
+    browserFrame.src = url;
+    urlInput.value = url;
+  } catch (e) {
+    const searchUrl = 'https://duckduckgo.com/?q=' + encodeURIComponent(url);
+    browserFrame.src = searchUrl;
+    browserFrame.style.display = 'block';
+    browserHome.style.display = 'none';
+    urlInput.value = searchUrl;
+  }
+}
+function performSearch() {
+  const searchInput = document.getElementById('homeSearchInput');
+  const browserFrame = document.getElementById('browserFrame');
+  const browserHome = document.getElementById('browserHome');
+  const query = searchInput.value.trim();
+  if (query !== '') {
+    const searchUrl = 'https://duckduckgo.com/?q=' + encodeURIComponent(query);
+    browserFrame.src = searchUrl;
+    browserFrame.style.display = 'block';
+    browserHome.style.display = 'none';
+    document.getElementById('urlInput').value = searchUrl;
+  }
+}
+function showHome() {
+  const browserFrame = document.getElementById('browserFrame');
+  const browserHome = document.getElementById('browserHome');
+  browserFrame.style.display = 'none';
+  browserHome.style.display = 'block';
+  document.getElementById('urlInput').value = '';
+}
+function navigateTo(url) {
+  const browserFrame = document.getElementById('browserFrame');
+  const browserHome = document.getElementById('browserHome');
+  document.getElementById('urlInput').value = url;
+  browserFrame.src = url;
+  browserFrame.style.display = 'block';
+  browserHome.style.display = 'none';
+}
+document.getElementById('urlInput').addEventListener('keypress', function (e) {
+  if (e.key === 'Enter') {
+    navigateToUrl();
+  }
+});
+document.getElementById('homeSearchInput').addEventListener('keypress', function (e) {
+  if (e.key === 'Enter') {
+    performSearch();
+  }
+});
+let isConnected = true;
+async function toggleConnection() {
+  const hasInternet = await checkRealInternetConnection();
+  const connectionStatus = document.getElementById('connectionStatus');
+  const toggleButton = document.querySelector('.connection-controls button');
+  connectionStatus.textContent = 'Connected';
+  toggleButton.textContent = 'Disconnect';
+  const statusIcon = document.querySelector('.internet-status');
+  const statusText = document.querySelector('.status-text');
+  const browserWindow = document.getElementById('browser-window');
+  const browserFrame = document.getElementById('browserFrame');
+  if (!isConnected && !hasInternet) {
+    alert('Unable to connect - No internet connection detected');
+    return;
+  }
+  isConnected = !isConnected;
+  if (isConnected) {
+    statusIcon.classList.remove('disconnected');
+    statusIcon.classList.add('connected');
+    statusText.textContent = 'Connected';
+    toggleButton.textContent = 'Disconnect';
+    document.getElementById('clickSound').play();
+    browserWindow.style.pointerEvents = 'all';
+    browserFrame.style.pointerEvents = 'all';
+    browserFrame.sandbox = 'allow-same-origin allow-scripts allow-popups allow-forms allow-downloads allow-presentation allow-modals allow-top-navigation';
+  } else {
+    statusIcon.classList.remove('connected');
+    statusIcon.classList.add('disconnected');
+    statusText.textContent = 'Disconnected';
+    connectionStatus.textContent = 'Disconnected';
+    toggleButton.textContent = 'Connect';
+    document.getElementById('clickSound').play();
+    browserWindow.style.pointerEvents = 'none';
+    browserFrame.style.pointerEvents = 'none';
+    browserFrame.src = 'about:blank';
+  }
+}
+document.getElementById('browserFrame').addEventListener('load', function (e) {
+  const frame = e.target;
+  try {
+    frame.contentWindow.location.href;
+  } catch (err) {
+    frame.srcdoc = `
+      <div style="padding: 20px; text-align: center; font-family: sans-serif;">
+        <h2 style="color: #e74c3c;">This website cannot be loaded</h2>
+        <p>Due to security restrictions, this site cannot be displayed.</p>
+        <p>Try visiting:</p>
+        <div style="display: flex; gap: 10px; justify-content: center; margin-top: 20px;">
+          <a href="https://duckduckgo.com" target="_blank"
+             style="padding: 10px 20px; background: #3498db; color: white; text-decoration: none; border-radius: 5px;">
+            DuckDuckGo
+          </a>
+          <a href="https://wikipedia.org" target="_blank"
+             style="padding: 10px 20px; background: #3498db; color: white; text-decoration: none; border-radius: 5px;">
+            Wikipedia  
+          </a>
+        </div>
+      </div>
+    `;
+  }
+});
+document.addEventListener('click', function (event) {
+  const popup = document.getElementById('connectionPopup');
+  const internetStatus = document.querySelector('.internet-status');
+  if (!popup.contains(event.target) && !internetStatus.contains(event.target)) {
+    popup.classList.remove('show');
+  }
+});
+const originalNavigateToUrl = navigateToUrl;
+navigateToUrl = function () {
+  if (!isConnected) {
+    alert('Please connect to the internet first!');
+    return;
+  }
+  originalNavigateToUrl();
+};
+const originalPerformSearch = performSearch;
+performSearch = function () {
+  if (!isConnected) {
+    alert('Please connect to the internet first!');
+    return;
+  }
+  originalPerformSearch();
+};
+const originalNavigateTo = navigateTo;
+navigateTo = function (url) {
+  if (!isConnected) {
+    alert('Please connect to the internet first!');
+    return;
+  }
+  originalNavigateTo(url);
+};
+async function checkRealInternetConnection() {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    const endpoints = ['https://www.google.com/favicon.ico', 'https://www.cloudflare.com/favicon.ico', 'https://www.microsoft.com/favicon.ico'];
+    for (const endpoint of endpoints) {
+      try {
+        const response = await fetch(endpoint, {
+          mode: 'no-cors',
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+        return true;
+      } catch (error) {
+        continue;
+      }
+    }
+    return false;
+  } catch (error) {
+    return false;
+  }
+}
+setInterval(async () => {
+  const hasInternet = await checkRealInternetConnection();
+  if (!hasInternet && isConnected) {
+    toggleConnection();
+  }
+}, 30000);
+document.getElementById('browser-window').style.pointerEvents = 'all';
+document.getElementById('browserFrame').style.pointerEvents = 'all';
+document.getElementById('browserFrame').sandbox = 'allow-same-origin allow-scripts allow-popups allow-forms allow-popups-to-escape-sandbox allow-presentation allow-top-navigation-by-user-activation';
+function createNoteIcon(noteData, timestamp) {
+  const desktop = document.querySelector('.desktop');
+  const noteIcon = document.createElement('div');
+  noteIcon.className = 'desktop-note';
+  noteIcon.style.left = `${Math.random() * (window.innerWidth - 100)}px`;
+  noteIcon.style.top = `${Math.random() * (window.innerHeight - 200)}px`;
+  noteIcon.innerHTML = `
+    <div class="note-icon">
+      <svg width="30" height="30" viewBox="0 0 24 24">
+        <path fill="#333" d="M14,10H19.5L14,4.5V10M5,3H15L21,9V19A2,2 0 0,1 19,21H5A2,2 0 0,1 3,19V5A2,2 0 0,1 5,3M5,5V19H19V12H13V6H5Z"/>
+      </svg>
+    </div>
+    <div class="note-title">${noteData.title}</div>
+  `;
+  makeElementDraggable(noteIcon);
+  const titleElement = noteIcon.querySelector('.note-title');
+  titleElement.addEventListener('click', e => {
+    if (e.detail === 3) {
+      titleElement.contentEditable = true;
+      titleElement.focus();
+    }
+  });
+  titleElement.addEventListener('blur', () => {
+    titleElement.contentEditable = false;
+  });
+  noteIcon.addEventListener('dblclick', () => {
+    const notesWindow = document.getElementById('notes-window');
+    notesWindow.style.display = 'block';
+    document.getElementById('notes-content').value = noteData.content;
+  });
+  desktop.appendChild(noteIcon);
+}
+function makeElementDraggable(element) {
+  let isDragging = false;
+  let currentX;
+  let currentY;
+  let initialX;
+  let initialY;
+  element.addEventListener('mousedown', startDragging);
+  document.addEventListener('mousemove', drag);
+  document.addEventListener('mouseup', stopDragging);
+  function startDragging(e) {
+    initialX = e.clientX - element.offsetLeft;
+    initialY = e.clientY - element.offsetTop;
+    isDragging = true;
+  }
+  function drag(e) {
+    if (isDragging) {
+      e.preventDefault();
+      currentX = e.clientX - initialX;
+      currentY = e.clientY - initialY;
+      currentX = Math.max(0, Math.min(currentX, window.innerWidth - element.offsetWidth));
+      currentY = Math.max(0, Math.min(currentY, window.innerHeight - element.offsetHeight - 40));
+      element.style.left = currentX + 'px';
+      element.style.top = currentY + 'px';
+    }
+  }
+  function stopDragging() {
+    isDragging = false;
+  }
+}
+function toggleFullscreen(window) {
+  window.classList.toggle('fullscreen');
+  const maxButton = window.querySelector('.maximize-button');
+  maxButton.textContent = window.classList.contains('fullscreen') ? '❐' : '□';
+  if (!window.classList.contains('fullscreen')) {
+    window.style.transform = 'translate(0px, 0px)';
+  }
+}
+document.querySelectorAll('.app-window').forEach(window => {
+  const maxButton = window.querySelector('.maximize-button');
+  maxButton.addEventListener('click', () => {
+    document.getElementById('clickSound').play();
+    toggleFullscreen(window);
+  });
+  const header = window.querySelector('.window-header');
+  header.addEventListener('dblclick', () => {
+    document.getElementById('clickSound').play();
+    toggleFullscreen(window);
+  });
+});</script>
+</body></html>
