@@ -1,1 +1,82 @@
+<html>
+<head>
+  <title>Access Code System</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="login-screen">
+    <div class="access-container">
+      <h1>Enter Access Code</h1>
+      <input type="password" id="access-code" placeholder="Code">
+      <button onclick="checkCode()">Submit</button>
+    </div>
+  </div>
 
+  <div id="matrix-screen" class="hidden">
+    <div class="matrix-bg"></div>
+    <div class="files-container">
+      <div class="notepad" id="file1">
+        <div class="notepad-header">
+          <div class="controls">
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+          </div>
+          <span>password.txt</span>
+        </div>
+        <div class="content">
+          Corporation password=382
+        </div>
+      </div>
+
+      <div class="notepad" id="file2">
+        <div class="notepad-header">
+          <div class="controls">
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+          </div>
+          <span>founder.txt</span>
+        </div>
+        <div class="content">
+          Founder Mareksplayz
+        </div>
+      </div>
+
+      <div class="notepad" id="file3">
+        <div class="notepad-header">
+          <div class="controls">
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+          </div>
+          <span>corrupted.txt</span>
+        </div>
+        <div class="content glitch-text">
+          C0rrupt3d_D@t@ F1l3... 
+          3rr0r_C0d3: 0xFF382A1
+          <br>
+          UN$T@BL3_M3M0RY_S3CT0R
+        </div>
+      </div>
+
+      <div class="notepad download-window">
+        <div class="notepad-header">
+          <div class="controls">
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+          </div>
+          <span>download.exe</span>
+        </div>
+        <div class="content">
+          <a href="https://www.mediafire.com/file/zl0wedqd9blrdmq/secret.zip/file" class="download-button" target="_blank">
+            DOWNLOAD
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>

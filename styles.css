@@ -1,0 +1,181 @@
+body, html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: 'Courier New', monospace;
+  background: #000;
+  overflow: hidden;
+}
+
+.hidden {
+  display: none !important;
+}
+
+#login-screen {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #000;
+}
+
+.access-container {
+  text-align: center;
+  padding: 2em;
+  background: rgba(0, 255, 0, 0.1);
+  border: 1px solid #0f0;
+  border-radius: 10px;
+}
+
+.access-container h1 {
+  color: #0f0;
+  margin-bottom: 1em;
+}
+
+input {
+  background: #000;
+  border: 1px solid #0f0;
+  color: #0f0;
+  padding: 0.5em;
+  margin-right: 1em;
+  outline: none;
+}
+
+button {
+  background: #0f0;
+  color: #000;
+  border: none;
+  padding: 0.5em 1em;
+  cursor: pointer;
+}
+
+.matrix-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #000;
+  z-index: -1;
+}
+
+.matrix-bg::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(0deg, 
+    rgba(0, 255, 0, 0.1) 25%,
+    rgba(0, 0, 0, 0.3) 50%
+  );
+  animation: matrix 2s linear infinite;
+}
+
+@keyframes matrix {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(100%); }
+}
+
+.files-container {
+  padding: 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  z-index: 1;
+}
+
+.notepad {
+  background: #fff;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+  overflow: hidden;
+  animation: appear 0.5s ease-out;
+  transform-origin: center;
+}
+
+@keyframes appear {
+  from {
+    transform: scale(0);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.notepad-header {
+  background: #e5e5e5;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+}
+
+.controls {
+  display: flex;
+  gap: 5px;
+  margin-right: 10px;
+}
+
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ff5f56;
+}
+
+.dot:nth-child(2) {
+  background: #ffbd2e;
+}
+
+.dot:nth-child(3) {
+  background: #27c93f;
+}
+
+.content {
+  padding: 15px;
+  min-height: 100px;
+  font-family: 'Courier New', monospace;
+}
+
+.glitch-text {
+  color: #ff0000;
+  text-shadow: 2px 2px #00ff00, -2px -2px #0000ff;
+  animation: glitch 0.3s infinite;
+}
+
+@keyframes glitch {
+  0% { transform: translate(0) }
+  20% { transform: translate(-2px, 2px) }
+  40% { transform: translate(-2px, -2px) }
+  60% { transform: translate(2px, 2px) }
+  80% { transform: translate(2px, -2px) }
+  100% { transform: translate(0) }
+}
+
+.download-button {
+  display: inline-block;
+  padding: 15px 30px;
+  background: linear-gradient(45deg, #00ff00, #00aa00);
+  color: white;
+  text-decoration: none;
+  border-radius: 5px;
+  font-weight: bold;
+  text-align: center;
+  width: 80%;
+  margin: 10px auto;
+  box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+  transition: all 0.3s ease;
+}
+
+.download-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 30px rgba(0, 255, 0, 0.8);
+}
+
+.download-window {
+  grid-column: span 2;
+  text-align: center;
+}
